@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Select Role</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <div class="role-page">
+    <div class="role-card">
+      <div class="brand center-brand">
+        <img
+          src="static/knowhub-logo.png"
+          alt="KnowHub"
+          class="knowhub-logo"
+        />
+
+      </div>
+
+      <h1>Choose your role</h1>
+      <p>Select a role to continue</p>
+
+      <select id="roleSelect" class="role-select">
+        <option value="Admin">Admin</option>
+        <option value="Developer">Developer</option>
+        <option value="Tester">Tester</option>
+        <option value="DevOps">DevOps</option>
+        <option value="Support">Support</option>
+      </select>
+
+      <button id="continueBtn" class="primary-btn full-width">Continue</button>
+
+      <div
+        id="adminMaintenanceSection"
+        class="maintenance-section"
+      >
+        <div class="section-title">
+          Maintenance
+        </div>
+
+        <button
+          id="cleanKnowledgeBaseBtn"
+          class="danger-btn"
+          type="button"
+        >
+          Clean Knowledge Base
+        </button>
+
+        <div class="helper-text">
+          Permanently removes all indexed knowledge.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const roleSelect = document.getElementById("roleSelect");
+    const continueBtn = document.getElementById("continueBtn");
+
+    const existingRole = localStorage.getItem("selected_role");
+    if (existingRole) {
+      roleSelect.value = existingRole;
+    }
+
+    continueBtn.addEventListener("click", () => {
+      localStorage.setItem("selected_role", roleSelect.value);
+      window.location.href = "/static/notebook.html";
+    });
+
+    const adminMaintenanceSection =
+  document.getElementById("adminMaintenanceSection");
+
+    roleSelect.addEventListener("change", () => {
+      adminMaintenanceSection.style.display =
+      roleSelect.value === "Admin" ? "block" : "none";
+    });
+
+    const cleanKnowledgeBaseBtn = document.getElementById("cleanKnowledgeBaseBtn");
+
+    if (cleanKnowledgeBaseBtn) {
+      cleanKnowledgeBaseBtn.addEventListener("click", async () => {
+      const confirmed = window.confirm(
+        "This will permanently delete the entire knowledge base. " +
+        "All indexed PDFs, documents, folders, websites, GitHub, " +
+        "Confluence, SharePoint and ServiceNow content will be removed.\n\n" +
+        "Do you want to continue?"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      cleanKnowledgeBaseBtn.disabled = true;
+      cleanKnowledgeBaseBtn.textContent = "Cleaning...";
+
+      try {
+        const res = await fetch("/knowledge-base", {
+          method: "DELETE",
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          alert(
+            data.error ||
+            "Unable to clean the knowledge base."
+          );
+          return;
+        }
+
+        // Clear client-side notebook/source information.
+        localStorage.removeItem("notebook_id");
+        localStorage.removeItem("indexed_sources");
+
+        // Generated artifacts.
+        localStorage.removeItem("generated_summary_items");
+        localStorage.removeItem("generated_quiz_items");
+        localStorage.removeItem("generated_audio_items");
+
+        // Published artifacts.
+        localStorage.removeItem("published_summaries_by_role");
+        localStorage.removeItem("published_quizzes_by_role");
+        localStorage.removeItem("published_audio_by_role");
+
+        alert(
+          `Knowledge base cleaned successfully. ` +
+          `${data.chunks_deleted || 0} chunks were removed.`
+        );
+
+      } catch (error) {
+        console.error(
+          "Knowledge base cleanup failed:",
+          error
+        );
+
+        alert(
+          "Unable to clean the knowledge base. Please try again."
+        );
+
+      } finally {
+        cleanKnowledgeBaseBtn.disabled = false;
+        cleanKnowledgeBaseBtn.textContent =
+          "Clean Knowledge Base";
+      }
+    });
+  }
+
+  </script>
+</body>
+</html>

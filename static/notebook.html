@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enterprise Knowledge Hub</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+
+      <!-- TOP -->
+      <div class="sidebar-top">
+        <div class="app-brand">
+          <img
+            src="knowhub-logo.png"
+            alt="KnowHub"
+            class="knowhub-logo"
+          />
+            
+        </div>
+
+        <button
+          id="newNotebookBtn"
+          class="primary-btn full-width admin-only"
+        >
+          New notebook
+        </button>
+      </div>
+
+      <!-- ROLE -->
+      <div class="sidebar-section role-section">
+        <div class="section-title">
+          Role
+        </div>
+
+        <div class="notebook-card role-card-inline">
+          <span class="notebook-label inline-label">
+          Current role:
+          </span>
+
+          <span
+            id="currentRole"
+            class="role-value"
+          >
+          Not selected
+          </span>
+        </div>
+
+        <button
+          id="changeRoleBtn"
+          class="secondary-btn full-width"
+          style="margin-top:12px;"
+        >
+          Change role
+        </button>
+      </div>
+
+      <!-- ADD SOURCES -->
+      <div class="sidebar-section admin-only">
+        <div class="section-title">
+          Add sources
+        </div>
+
+        <div class="helper-text">
+          Add sources one at a time.
+          Each new source is added to the current notebook.
+        </div>
+
+        <!-- FILE UPLOAD -->
+        <form
+          id="uploadForm"
+          class="source-form"
+        >
+          <label class="input-label">
+            Upload PDF, Word, PowerPoint, Excel or TXT
+          </label>
+
+          <input
+            type="file"
+            id="sourceFile"
+            accept=".pdf,.txt,.docx,.pptx,.xlsx"
+            required
+          />
+
+          <button
+            type="submit"
+            class="primary-btn full-width"
+          >
+            Upload a single file
+          </button>
+        </form>
+
+        <div class="helper-text" style="margin-top: 14px; margin-bottom: 8px;">
+          Upload all relevant (.pdf, .txt, .docx, .pptx, .xlsx) files inside a folder in one-go
+        </div>
+        <button id="addFolderBtn" class="primary-btn full-width" style="margin-top:12px;">
+          Upload files inside a Folder
+        </button>
+
+        <input
+          type="file"
+          id="directoryInput"
+          webkitdirectory
+          directory
+          multiple
+          accept=".pdf,.txt,.docx,.pptx,.xlsx"
+          style="display:none;"
+        />
+
+
+        <!-- URL -->
+        <br/>
+        <form
+          id="urlForm"
+          class="source-form"
+        >
+          <input
+            type="url"
+            id="websiteUrl"
+            placeholder="https://example.com/article"
+            required
+          />
+
+          <button
+            type="submit"
+            class="primary-btn full-width"
+          >
+            Add website
+          </button>
+        </form>
+
+        <br/>
+        <form
+          id="confluenceForm"
+          class="source-form"
+        >
+          <input
+            type="url"
+            id="confUrl"
+            placeholder="Enter Page/Space URL"
+            required
+          />
+
+          <button
+            type="submit"
+            class="primary-btn full-width"
+          >
+            Add Confluence
+          </button>
+        </form>
+
+        <div class="source-form" style="margin-top: 12px;">
+
+          <div class="helper-text">
+            Index all Incidents, Problems, and Change Requests from ServiceNow.
+          </div>
+          <button
+            type="button"
+            id="servicenowBtn"
+            class="primary-btn full-width"
+            style="margin-top: 12px;"
+          >
+          Add ServiceNow
+          </button>
+        </div>
+
+        <div class="source-form" style="margin-top: 12px;">
+        
+          <div class="helper-text">
+            Index all Accounts, Opportunities and Cases from Salesforce.
+          </div>
+          <button
+            type="button"
+            id="salesforceBtn"
+            class="primary-btn full-width"
+            style="margin-top: 12px;"
+          >
+          Add Salesforce
+          </button>
+        </div>
+
+        <div class="source-section jira-source-section admin-only">
+          <div class="source-section-header">
+
+            <div>
+              <div class="source-description">
+                Add JIRA Issues, Incidents and Service Requests 
+              </div>
+            </div>
+          </div>
+
+          <form id="jiraForm" class="source-form">
+
+            <label for="jiraProjectKey">
+              Enter JIRA Project Key
+            </label>
+
+            <input
+              type="text"
+              id="jiraProjectKey"
+              name="jiraProjectKey"
+              placeholder="e.g. TS"
+              autocomplete="off"
+              required
+            />
+
+            <button
+              type="button"
+              id="jiraBtn"
+              class="primary-btn full-width"
+              style="margin-top: 12px;"
+            >
+              Add JIRA 
+            </button>
+
+          </form>
+
+          <div
+            id="jiraStatus"
+            class="source-status"
+          ></div>
+        </div>
+
+
+      </div>
+
+      <!-- SOURCES -->
+      <div class="sidebar-section grow admin-only">
+        <div class="section-title">
+          Sources
+        </div>
+
+        <div
+          id="sourcesList"
+          class="sources-list empty-state"
+        >
+          No sources yet
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <div class="main-area">
+
+      <!-- HEADER -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="page-title">
+            KnowledgeHub workspace
+          </div>
+
+          <div class="page-subtitle admin-only">
+            Upload documents, URLs,
+            and chat with citations
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            Ready
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT -->
+      <main class="content-grid">
+
+        <!-- CHAT -->
+        <section class="chat-panel panel">
+
+          <div class="panel-header">
+            <div>
+              <h1>
+                Chat here
+              </h1>
+
+              <p>
+                Ask questions across all indexed sources.
+              </p>
+            </div>
+          </div>
+
+          <!-- CHAT BOX -->
+          <div
+            id="chatBox"
+            class="chat-box"
+          >
+
+          </div>
+
+          <!-- CHAT INPUT -->
+          <form
+            id="chatForm"
+            class="composer"
+          >
+            <input
+              type="text"
+              id="question"
+              placeholder="What do you want to ask?"
+              required
+            />
+
+            <button
+              type="submit"
+              class="primary-btn"
+            >
+              Ask
+            </button>
+          </form>
+
+        </section>
+
+        <!-- RIGHT PANEL -->
+        <aside class="right-rail">
+
+          <!-- ACTIONS -->
+          <section class="panel actions-panel admin-only">
+
+            <div class="panel-header compact">
+              <div>
+                <h2>
+                  Actions
+                </h2>
+
+                <p>
+                  Generate outputs from notebook content.
+                </p>
+              </div>
+            </div>
+
+            <div class="action-list">
+
+              <!-- SUMMARY -->
+              <button
+                id="summaryBtn"
+                class="action-btn"
+              >
+                <span class="action-title">
+                  Generate Summary
+                </span>
+
+              </button>
+
+              <!-- QUIZ -->
+              <button
+                id="quizBtn"
+                class="action-btn"
+              >
+                <span class="action-title">
+                  Generate Quiz
+                </span>
+
+              </button>
+
+              <!-- AUDIO -->
+              <button
+                id="audioBtn"
+                class="action-btn"
+              >
+                <span class="action-title">
+                  Generate Audio
+                </span>
+
+              </button>
+
+            </div>
+
+          </section>
+
+          <!-- OUTPUTS -->
+          <section class="panel output-panel">
+
+            <!-- TABS -->
+            <div class="output-tabs">
+
+              <button
+                class="tab-btn active"
+                data-target="summaryTab"
+              >
+                Summary
+              </button>
+
+              <button
+                class="tab-btn"
+                data-target="quizTab"
+              >
+                Quiz
+              </button>
+
+              <button
+                class="tab-btn"
+                data-target="audioTab"
+              >
+                Audio
+              </button>
+
+            </div>
+
+            <!-- SUMMARY -->
+            <div
+              id="summaryTab"
+              class="tab-content active"
+            >
+              <div class="output-card">
+
+                <div class="output-card-header">
+                  Generated summaries
+                </div>
+
+                <pre
+                  id="summaryOutput"
+                  class="output-text hidden"
+                  style="display:none;"
+                ></pre>
+
+              </div>
+            </div>
+
+            <!-- QUIZ -->
+            <div
+              id="quizTab"
+              class="tab-content"
+            >
+              <div class="output-card">
+
+                <div class="output-card-header">
+                  Generated quizzes
+                </div>
+
+                <pre
+                  id="quizOutput"
+                  class="output-text hidden"
+                  style="display:none;"
+                ></pre>
+
+              </div>
+            </div>
+
+            <!-- AUDIO -->
+            <div
+              id="audioTab"
+              class="tab-content"
+            >
+              <div class="output-card">
+
+                <div class="output-card-header">
+                  Audio overviews
+                </div>
+
+                <audio
+                  id="audioPlayer"
+                  controls
+                  style="display:none; width:100%; margin-bottom:12px;"
+                ></audio>
+
+                <pre
+                  id="audioScript"
+                  class="output-text hidden"
+                  style="display:none;"
+                ></pre>
+
+              </div>
+            </div>
+
+          </section>
+
+        </aside>
+
+      </main>
+
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div
+    id="promptModal"
+    class="modal-backdrop hidden"
+  >
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <h2 id="modalTitle">
+          Generate
+        </h2>
+
+        <button
+          id="closeModalBtn"
+          class="modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <p
+        id="modalDescription"
+        class="modal-description"
+      >
+        Edit the prompt below, then submit.
+      </p>
+
+      <input type="text" id="contentTitle" class="modal-input" placeholder="Enter title" />
+
+      <textarea
+        id="modalPrompt"
+        class="modal-textarea"
+      ></textarea>
+
+      <div class="modal-actions">
+
+        <button
+          id="cancelModalBtn"
+          class="secondary-light-btn"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="submitModalBtn"
+          class="primary-btn"
+        >
+          Generate
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <input type="file" id="updateSourceFile" accept=".pdf,.txt,.docx,.pptx,.xlsx" style="display:none;" />
+
+  <div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loading-card">
+    <div class="loading-spinner"></div>
+    <div class="loading-title">Uploading source</div>
+    <div class="loading-text">Please wait while the source is indexed...</div>
+  </div>
+  </div>
+
+  <div id="notebookId" style="display:none;"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

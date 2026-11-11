@@ -58,7 +58,9 @@ knowhub uses API tokens to connect.
 
 # How to Run
 In your root folder, type the following command
+
 python -m uvicorn main:app --reload
+
 This will start a FastAPI server running on port 8000. 
 
 Now, open a browser and go to http://localhost:8000 and select Role as Admin and click on Continue button. Thereafter, add sources (such as files, Salesforce etc) to ingest information from these systems. You can then use the Chat section to ask for information.

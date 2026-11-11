@@ -50,3 +50,8 @@ knowhub uses OAuth to connect to your Salesforce instance. Here are the steps yo
 
     7. After External Client App is created, select the Consumer Key and save it as SALESFORCE_CLIENT_ID in environment variable
 
+### ServiceNow Connectivity
+knowhub uses REST APIs to connect to ServiceNow. Create a User in ServiceNow with permissions to use ServiceNow REST APIs. This is not recommended for production use. 
+
+### JIRA and Confluence Connectivity
+knowhub uses API tokens to connect.

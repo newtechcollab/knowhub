@@ -11,7 +11,7 @@ knowhub solves both above problems.
 # How about data security and data privacy
 After retrieving the data from enterprise systems, the knowhub scrubs the data to anonymize confidential data such as PII data, customer information. You can also extend this easily to implement any specific data privacy pertaining to your organization or use case.
 
-# How to Install and Run
+# How to Install
 
 ## Pre-requisites
 1. Python version 3.11 or later.
@@ -55,3 +55,10 @@ knowhub uses REST APIs to connect to ServiceNow. Create a User in ServiceNow wit
 
 ### JIRA and Confluence Connectivity
 knowhub uses API tokens to connect.
+
+# How to Run
+In your root folder, type the following command
+python -m uvicorn main:app --reload
+This will start a FastAPI server running on port 8000. 
+
+Now, open a browser and go to http://localhost:8000 and select Role as Admin and click on Continue button. Thereafter, add sources (such as files, Salesforce etc) to ingest information from these systems. You can then use the Chat section to ask for information.

@@ -11,4 +11,6 @@ knowhub solves both above problems.
 # How about data security and data privacy
 After retrieving the data from enterprise systems, the knowhub scrubs the data to anonymize confidential data such as PII data, customer information. You can also extend this easily to implement any specific data privacy pertaining to your organization or use case.
 
+# How to Install and Run
+## Pre-requisites
 

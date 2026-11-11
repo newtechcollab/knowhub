@@ -12,5 +12,25 @@ knowhub solves both above problems.
 After retrieving the data from enterprise systems, the knowhub scrubs the data to anonymize confidential data such as PII data, customer information. You can also extend this easily to implement any specific data privacy pertaining to your organization or use case.
 
 # How to Install and Run
+
 ## Pre-requisites
+1. Python version 3.11 or later.
+2. Access to different Enterprise Systems (such as Salesforce, ServiceNow etc). The details are provided sections below.
+3. Access to LLM Models (for Inferencing and for Vector Embedding). The details are provided sections below.
+
+## Setup
+1. Optional Step -> Create a Python Virtual Environment (python -m venv venv)
+2. Clone this repository (git clone https://github.com/newtechcollab/knowhub.git)
+3. Install the required Python libraries (python -m pip install - requirements.txt)
+
+## Configuration
+knowhub uses different system environment variables - you can either set these in .env file (located in root folder) or set within your OS.
+
+1. LLM Configuration
+  a. If you are using OpenAI APIs, then, set your OpenAI API Key in OPENAI_API_KEY. Also, set LLM_MODEL and EMBEDDING_MODEL accordingly.
+  b. If you have Github Copilot subscription, you can use the underlying LLM of Github Copilot as the Inferencing Engine. However, Github Copilot does not provide access to any Vector Embedding model. I have built a utility that internally uses LLM of Github Copilot and open source Ollama hosted Embedding model. Check the utility module in this repository.
+
+By default, knowhub assumes that you will use option 1a. In case you go for 1b or any other mechanism for LLM access, then, edit main.py and set openai_client member variable accordingly.
+
+
 

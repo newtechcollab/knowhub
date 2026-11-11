@@ -32,5 +32,21 @@ knowhub uses different environment variables - you can either set these in .env 
 
 By default, knowhub assumes that you will use option 1a. In case you go for 1b or any other mechanism for LLM access, then, edit main.py and set openai_client member variable accordingly.
 
+### Salesforce Connectivity
+knowhub uses OAuth to connect to your Salesforce instance. Here are the steps you need to follow:
 
+    1. Create a Private Key and Public Key using command below. Set the location/name of server.key as SALESFORCE_PRIVATE_KEY_PATH in environment variable 
+    openssl req -newkey rsa:2048 -nodes -keyout server.key -x509 -days 365 -out server.crt
+
+    2. Create an External Client App in Salesforce, using OAuth Flow Type as JWT Bearer, uploading server.crt from step 1
+
+    3. Select OAuth Scopes - Manage user data via APIs (api) and Perform requests at any time (refresh_token, offline_access)
+
+    4. Set OAuth Policy as Admin approved users are pre-authorized
+
+    5. Create a new User in Salesforce - this user will be used by this Connector to connect to Salesforce. Save this Username as SALESFORCE_USERNAME in environment variable
+
+    6. Create a new Permission Set and assign it to above User and also to above External Client App
+
+    7. After External Client App is created, select the Consumer Key and save it as SALESFORCE_CLIENT_ID in environment variable
 

@@ -46,6 +46,7 @@ from knowledge.recordidentityservice import RecordIdentityService
 from security.data_sanitizer import SensitiveDataSanitizer
 
 from connectors.salesforce import SalesforceConnector
+from connectors.servicenow import ServiceNowConnector
 
 load_dotenv()
 
@@ -85,14 +86,19 @@ CONFLUENCE_SOURCES_FILE = os.path.join(BASE_DIR, "confluence_sources.json",)
 confluence_poll_stop_event = asyncio.Event()
 
 # -------------------------------------------------------------------
-# ServiceNow-related configuration is given below, such as Instance Name, 
-# UserName, Password etc.
+# ServiceNow-related configuration is given below, such as Instance Name etc.
 # All of these have to be set in system environment for this to work
 # -------------------------------------------------------------------
 
 SERVICENOW_INSTANCE = os.getenv("SERVICENOW_INSTANCE", "").rstrip("/")
-SERVICENOW_USERNAME = os.getenv("SERVICENOW_USERNAME", "")
-SERVICENOW_PASSWORD = os.getenv("SERVICENOW_PASSWORD", "")
+
+# We are no longer using User/Password-based authentication
+# Instead, we are using OAuth-based authentication
+#SERVICENOW_USERNAME = os.getenv("SERVICENOW_USERNAME", "")
+#SERVICENOW_PASSWORD = os.getenv("SERVICENOW_PASSWORD", "")
+SERVICENOW_CLIENT_ID = os.getenv("SERVICENOW_CLIENT_ID", "")
+SERVICENOW_CLIENT_SECRET = os.getenv("SERVICENOW_CLIENT_SECRET", "")
+
 SERVICENOW_POLL_INTERVAL_SECONDS = 3600
 SERVICENOW_SYNC_FILE = os.path.join(DATA_DIR, "servicenow_sync_state.json",)
 SERVICENOW_SOURCE_IDS_FILE = os.path.join(DATA_DIR, "servicenow_source_ids.json",)
@@ -105,7 +111,7 @@ servicenow_poll_stop_event = asyncio.Event()
 # All of these have to be set in system environment for this to work
 # -------------------------------------------------------------------
 
-SALESFORCE_POLL_INTERVAL_SECONDS = 60
+SALESFORCE_POLL_INTERVAL_SECONDS = 3600
 SALESFORCE_SYNC_STATE_FILE = os.path.join(DATA_DIR, "salesforce_sync_state.json",)
 salesforce_poll_task = None
 salesforce_poll_stop_event = asyncio.Event()
@@ -409,6 +415,22 @@ def get_salesforce_connector():
         )
 
     return salesforce_connector
+
+# ServiceNow Connector
+servicenow_connector = None
+
+# Get ServiceNow Connector
+def get_servicenow_connector():
+    global servicenow_connector
+
+    if servicenow_connector is None:
+        servicenow_connector = ServiceNowConnector(
+            instance_url=SERVICENOW_INSTANCE,
+            client_id=SERVICENOW_CLIENT_ID,
+            client_secret=SERVICENOW_CLIENT_SECRET,
+        )
+
+    return servicenow_connector
 
 # Polling of Salesforce
 async def salesforce_poll_loop():
@@ -2646,8 +2668,12 @@ def servicenow_value(record: dict, field: str) -> str:
 def clean_servicenow_field(record: dict, field: str) -> str:
     return clean_servicenow_html(servicenow_value(record, field))
 
-
-
+# ------------------------------------------------------------
+# The following code is commented out since we are no longer
+# using User/Password based authentication for ServiceNow
+# Instead, we are using OAuth-based authentication
+# ------------------------------------------------------------
+"""
 def fetch_servicenow_records(
     table: str,
     encoded_query: str | None = None,
@@ -2769,6 +2795,114 @@ def fetch_servicenow_records(
     )
 
     return all_records
+
+"""
+
+def fetch_servicenow_records(
+    table: str,
+    encoded_query: str | None = None,
+    page_size: int = 100,
+    last_updated: str | None = None,
+):
+    """
+    Fetch ServiceNow records using OAuth 2.0.
+
+    Supports:
+        - Initial ingestion
+        - Incremental polling
+        - Pagination
+        - ServiceNow table configuration
+    """
+
+    if table not in SERVICENOW_TABLE_CONFIG:
+        raise ValueError(
+            f"Unsupported ServiceNow table: {table}"
+        )
+
+    if page_size <= 0:
+        raise ValueError(
+            "page_size must be greater than zero."
+        )
+
+    config = SERVICENOW_TABLE_CONFIG[table]
+
+    all_records = []
+    offset = 0
+
+    while True:
+
+        params = {
+            "sysparm_limit": page_size,
+            "sysparm_offset": offset,
+            "sysparm_display_value": "false",
+            "sysparm_exclude_reference_link": "true",
+            "sysparm_fields": ",".join(
+                config["fields"]
+            ),
+        }
+
+        # ------------------------------------------------------
+        # Incremental polling
+        # ------------------------------------------------------
+
+        if last_updated:
+
+            params["sysparm_query"] = (
+                f"sys_updated_on>{last_updated}"
+                "^ORDERBYsys_updated_on"
+            )
+
+        # ------------------------------------------------------
+        # Initial ingestion with optional query
+        # ------------------------------------------------------
+
+        elif encoded_query:
+
+            params["sysparm_query"] = encoded_query
+
+        # ------------------------------------------------------
+        # Call ServiceNow using OAuth
+        # ------------------------------------------------------
+
+        servicenow_connector = get_servicenow_connector()
+
+        result = servicenow_connector.get(
+            path=f"/api/now/table/{table}",
+            params=params,
+        )
+
+        records = result.get(
+            "result",
+            [],
+        )
+
+        if not isinstance(records, list):
+            raise RuntimeError(
+                "Unexpected ServiceNow API response."
+            )
+
+        print(
+            f"ServiceNow {table}: "
+            f"received {len(records)} records"
+        )
+
+        if not records:
+            break
+
+        all_records.extend(records)
+
+        if len(records) < page_size:
+            break
+
+        offset += page_size
+
+    print(
+        f"ServiceNow {table}: "
+        f"total records fetched = {len(all_records)}"
+    )
+
+    return all_records
+
 
 def build_incident_text(record: dict) -> str:
     return f"""

@@ -84,4 +84,8 @@ python -m uvicorn main:app --reload
 
 This will start a FastAPI server running on port 8000. 
 
-Now, open a browser and go to http://localhost:8000 and select Role as Admin and click on Continue button. Thereafter, add sources (such as files, Salesforce etc) to ingest information from these systems. You can then use the Chat section to ask for information.
+Now, open a browser and go to http://localhost:8000 and select Role as Admin and click on Continue button. Thereafter, add sources (such as files, Salesforce etc) to ingest information from these systems as well as create relationships between these records. You can then use the Chat section to ask for information.
+When you add Salesforce/ServiceNow/Confluence/JIRA as a source, the server starts periodically polling these sources to look for new/modified records and then ingests these records. It also re-creates/modifies the relationships.
+
+# What comes next
+I plan to support more Enterprise systems as sources, such as Zendesk, ERPs in future. 

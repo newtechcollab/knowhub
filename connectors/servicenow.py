@@ -21,6 +21,29 @@ class ServiceNowConnector:
         - KnowledgeRecord conversion
         - Relationship extraction
         - Sync state management
+
+    This Connector uses OAuth to connect to ServiceNow. Here are the steps you need to follow:
+
+    1. Make sure that in ServiceNow, the System Property glide.oauth.inbound.client.credential.grant_type.enabled is set to true. 
+
+    2. Go to Machine Identity Console in ServiceNow. Click on Inbound Integrations
+ 
+    3. Create a New Integration.
+
+    4. Select Application Connection Type as OAuth - Client credentials grant
+
+    5. Enter a value in Name field. 
+
+    6. Enter a value in Provider Name field (such as knowledge hub)
+
+    7. Select an OAuth Application User
+
+    8. Under Auth Scope section, create a new auth scope with authorization to Table API
+
+    9. Click on Submit.
+
+    10. Copy the values of Client ID and Client secret and set these in .env file
+  
     """
 
     # ----------------------------------------------------------
